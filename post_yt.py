@@ -22,10 +22,11 @@ youtube = googleapiclient.discovery.build("youtube", "v3", credentials=flow.run_
 with open("video_ids.json", "r") as in_file:
 
     # Get playlist id from url
-    playlist_id = "PLFzzCTS-4gnz5xEOtzBTlTUcK6ZDXQzGq"
+    playlist_id = os.environ.get('PLAYLIST_ID')
     video_ids = json.load(in_file)['video_ids']
 
     for video_id in video_ids:
+
         request = youtube.playlistItems().insert(
             part="snippet",
             body={
@@ -38,9 +39,13 @@ with open("video_ids.json", "r") as in_file:
                 }
             }
         )
-        response = request.execute()
-        time.sleep(0.1)
-        print(f"Added {response['snippet']['title']} to the playlist")
 
+        try:
+            response = request.execute()
+            print(f"Added {response['snippet']['title']} to the playlist")
+        except googleapiclient.errors.HttpError as e:
+            print(e.error_details + f" ----- {video_id}")
+
+        sleep(1.5)
 
 
